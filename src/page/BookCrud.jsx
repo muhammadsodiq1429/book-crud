@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import Popup from "../components/ui/Popup";
 import { BiPlus, BiSearch } from "react-icons/bi";
+import { FaEdit, FaTrash } from "react-icons/fa";
+import { ImCross } from "react-icons/im";
 
 export default class BookCrud extends Component {
   constructor() {
@@ -12,6 +14,7 @@ export default class BookCrud extends Component {
       genre: "",
       price: "",
       books: [],
+      updatingItem: null,
     };
   }
 
@@ -19,23 +22,52 @@ export default class BookCrud extends Component {
     this.setState({ showPopup: true });
   };
   handleSubmit = (e) => {
-    const { title, author, genre, price, books } = this.state;
     e.preventDefault();
-
-    const newBook = {
-      id: Date.now(),
-      title,
-      author,
-      genre,
-      price,
-      books,
-    };
-    this.setState({ books: [...books, newBook] });
-
-    this.setState({ showPopup: false });
+    const { title, author, genre, price, books, updatingItem } = this.state;
+    if (updatingItem) {
+      this.setState({
+        books: books.map((book) =>
+          book.id === updatingItem.id
+            ? { ...book, title, author, genre, price }
+            : book
+        ),
+      });
+    } else {
+      const newBook = {
+        id: Date.now(),
+        title,
+        author,
+        genre,
+        price,
+        books,
+      };
+      this.setState({ books: [...books, newBook] });
+    }
+    this.setState({
+      title: "",
+      author: "",
+      genre: "",
+      price: "",
+      showPopup: false,
+    });
   };
+  handleDelete = (id) => {
+    const { books } = this.state;
+    this.setState({ books: books.filter((book) => book.id !== id) });
+  };
+  handleUpdate = (book) => {
+    this.setState({
+      updatingItem: book,
+      title: book.title,
+      author: book.author,
+      genre: book.genre,
+      price: book.price,
+      showPopup: true,
+    });
+  };
+
   render() {
-    const { title, author, genre, price, books } = this.state;
+    const { title, author, genre, price, books, showPopup } = this.state;
     return (
       <div className="flex flex-col items-center">
         <div className="border w-[80%] flex items-center h-15 px-4 text-[20px]">
@@ -48,13 +80,19 @@ export default class BookCrud extends Component {
           </button>
         </div>
         {this.state.showPopup && (
-          <Popup>
+          <Popup onClick={() => this.setState({ showPopup: false })}>
             <form
               action=""
               className="flex flex-col gap-3 bg-white w-[400px] p-10"
               onSubmit={this.handleSubmit}
             >
-              <h3 className="text-2xl font-bold">Book</h3>
+              <div className="flex justify-between items-center">
+                <h3 className="text-2xl font-bold">Book</h3>
+                <ImCross
+                  className="cursor-pointer"
+                  onClick={() => this.setState({ showPopup: false })}
+                />
+              </div>
               <input
                 type="text"
                 placeholder="Title…"
@@ -84,7 +122,7 @@ export default class BookCrud extends Component {
                 value={price}
               />
               <button className="border cursor-pointer py-2 px-3 rounded-[10px] bg-black text-white">
-                Add
+                {showPopup ? "Save" : "Add"}
               </button>
             </form>
           </Popup>
@@ -97,6 +135,8 @@ export default class BookCrud extends Component {
               <th className="px-4 py-3 font-semibold text-gray-700">Author</th>
               <th className="px-4 py-3 font-semibold text-gray-700">Genre</th>
               <th className="px-4 py-3 font-semibold text-gray-700">Price</th>
+              <th className="px-4 py-3 font-semibold text-gray-700">Update</th>
+              <th className="px-4 py-3 font-semibold text-gray-700">Delete</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200 bg-white">
@@ -107,6 +147,12 @@ export default class BookCrud extends Component {
                 <td className="px-4 py-3 text-gray-700">{book.author}</td>
                 <td className="px-4 py-3 text-gray-700">{book.genre}</td>
                 <td className="px-4 py-3 text-gray-700">{book.price}</td>
+                <td className="px-4 py-3 text-blue-600 cursor-pointer">
+                  {<FaEdit onClick={() => this.handleUpdate(book)} />}
+                </td>
+                <td className="px-4 py-3 text-red-600 cursor-pointer">
+                  {<FaTrash onClick={() => this.handleDelete(book.id)} />}
+                </td>
               </tr>
             ))}
           </tbody>
