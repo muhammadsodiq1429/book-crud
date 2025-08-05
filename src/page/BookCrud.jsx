@@ -13,7 +13,7 @@ export default class BookCrud extends Component {
       author: "",
       genre: "",
       price: "",
-      books: [/* 
+      books: [
         {
           id: 1,
           title: "Clean Code",
@@ -84,7 +84,7 @@ export default class BookCrud extends Component {
           genre: "Fiction",
           price: "16.50",
         },
-       */],
+      ],
       data: null,
       updatingItem: null,
       searchValue: "",
